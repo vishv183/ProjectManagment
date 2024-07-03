@@ -1,5 +1,5 @@
 from django.contrib.auth.password_validation import validate_password
-from rest_framework import serializers, request
+from rest_framework import serializers, request, viewsets, permissions
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
@@ -25,29 +25,33 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
 
-from django.contrib.auth.password_validation import validate_password
-from rest_framework import serializers, request
-from rest_framework.validators import UniqueValidator
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
-from apps.Profile.models import CustomUser
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return CustomUser.objects.all()
+        return CustomUser.objects.filter(id=self.request.user.id)
 
+    def perform_update(self, serializer):
+        if not self.request.user.is_superuser and serializer.instance.id != self.request.user.id:
+            raise permissions.PermissionDenied("You do not have permission to update this user.")
+        serializer.save()
 
-class CustomUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CustomUser
-        fields = '__all__'
+    def perform_destroy(self, instance):
+        if not self.request.user.is_superuser and instance.id != self.request.user.id:
+            raise permissions.PermissionDenied("You do not have permission to delete this user.")
+        instance.delete()
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user=user)
-
-        # Add custom claims
         token['username'] = user.username
         token['email'] = user.email
-        # Debugging output
         print(f'username: {user.username}, email: {user.email}')
         return token
 
@@ -60,4 +64,3 @@ class RegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = CustomUser.objects.create_user(validated_data['email'], password=validated_data['password'])
         return user
-

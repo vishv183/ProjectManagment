@@ -27,7 +27,6 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
     @swagger_auto_schema(
-        method='post',
         operation_description="Obtain JWT token pair with custom claims",
         responses={
             200: openapi.Response(description='JWT token pair obtained successfully', schema=openapi.Schema(
@@ -40,20 +39,53 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             400: "Bad Request"
         },
     )
-    @api_view(['POST'])
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
 
 
-class UserListUpdateView(generics.ListAPIView, generics.UpdateAPIView):
+class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
-    API endpoint to list all user
+    API endpoint to retrieve, update, or delete user details.
     """
+    queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
+    lookup_field = 'id'
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_superuser:
+            return CustomUser.objects.all()
+        return CustomUser.objects.filter(id=user.id)
+
+    def get(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    def put(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = CustomUserSerializer(instance, data=request.data, partial=True, exclude_fields=['email', 'password'])
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def patch(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = CustomUserSerializer(instance, data=request.data, partial=True, exclude_fields=['email', 'password'])
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class RegisterApi(generics.GenericAPIView):
     serializer_class = RegisterSerializer
+    permission_classes = []
 
     @swagger_auto_schema(operation_description="Register a new user", request_body=CustomUserSerializer)
     def post(self, request, *args, **kwargs):
@@ -96,4 +128,3 @@ class LogoutAPIView(APIView):
 
         except Exception as e:
             return Response({'error': 'Invalid token provided.'}, status=status.HTTP_400_BAD_REQUEST)
-
