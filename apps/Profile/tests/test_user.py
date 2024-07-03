@@ -71,16 +71,6 @@ class UserListUpdateViewTest(TestBase):
         response = self.user_client.patch(f'/api-profile/users/{self.user.id}/', updated_data, format='json')
         self.assertEqual(response.status_code, 401)
 
-    def test_unauthenticated_superuser_cannot_update_all_profile(self):
-        updated_data = {
-            "email": "superuser@example.com",
-            "mobile": "1355447669",
-        }
-        self.user_client.logout()
-        response = self.user_client.patch(f'/api-profile/users/{self.user.id}/', updated_data, format='json')
-
-        self.assertEqual(response.status_code, 401)
-
     def test_authenticated_user_can_delete_own_profile(self):
         self.user_client.force_authenticate(user=self.user)
         response = self.user_client.delete(f'/api-profile/users/{self.user.id}/')
