@@ -12,12 +12,31 @@ from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from apps.Profile.models import CustomUser
-from apps.Profile.serializer import RegisterSerializer, CustomTokenObtainPairSerializer, CustomUserSerializer
+from apps.Profile.serializer import RegisterSerializer, CustomTokenObtainPairSerializer, CustomUserSerializer, \
+    UserUpdateSerializerUsingSerializer
 
 
 # Create your views here.
 def profile(request):
     return HttpResponse("Profile Working!")
+
+
+class UserUpdateView(generics.UpdateAPIView):
+    """
+    API endpoint to update a user.
+    """
+    queryset = CustomUser.objects.all()
+    serializer_class = UserUpdateSerializerUsingSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class UserDetailView(generics.RetrieveUpdateAPIView):
+    """
+    Retrieve or update user profile
+    """
+    queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
+    permission_classes = [IsAuthenticated]
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -65,14 +84,16 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def put(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = CustomUserSerializer(instance, data=request.data, partial=True, exclude_fields=['email', 'password'])
+        serializer = CustomUserSerializer(instance, data=request.data, partial=True,
+                                          exclude_fields=['email', 'password'])
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
 
     def patch(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = CustomUserSerializer(instance, data=request.data, partial=True, exclude_fields=['email', 'password'])
+        serializer = CustomUserSerializer(instance, data=request.data, partial=True,
+                                          exclude_fields=['email', 'password'])
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
@@ -111,6 +132,15 @@ class RegisterApi(generics.GenericAPIView):
                 'tokens': tokens
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserUpdateView(generics.UpdateAPIView):
+    """
+    API endpoint to update a user.
+    """
+    queryset = CustomUser.objects.all()
+    serializer_class = UserUpdateSerializerUsingSerializer
+    permission_classes = [IsAuthenticated]
 
 
 class LogoutAPIView(APIView):

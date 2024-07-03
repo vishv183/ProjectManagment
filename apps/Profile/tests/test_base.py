@@ -3,6 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.Profile.models import CustomUser
 
@@ -20,11 +21,18 @@ class TestBase(APITestCase):
         self.user = CustomUser.objects.create_user(
             email='user@example.com', password='userpassword'
         )
+        self.refresh = RefreshToken.for_user(self.user)
+        self.access = str(self.refresh.access_token)
+
         self.user_client = APIClient()
-        self.user_client.login(email="user@example.com", password="userpassword")
+        self.user_client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.access}")
+        # self.user_client.force_authenticate(user=self.user)
+
+        self.superuser_refresh = RefreshToken.for_user(self.superuser)
+        self.superuser_access = str(self.superuser_refresh.access_token)
 
         self.superuser_client = APIClient()
-        self.superuser_client.login(email='superuser@example.com', password='superpassword')
-        self.url = f'/api-profile/users/{self.user.pk}/'
+        self.superuser_client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.superuser_access}")
+        self.superuser_client.force_authenticate(user=self.superuser)
 
         super().setUp()

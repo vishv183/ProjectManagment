@@ -36,6 +36,9 @@ class CustomUser(AbstractUser):
 
     objects = CustomUserManager()
 
+    class Meta:
+        ordering = ['id']
 
     def __str__(self):
-        return self.email
+        return f' {self.id}, {self.email}'
+
