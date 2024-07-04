@@ -7,6 +7,6 @@ class Project(models.Model):
     due_date = models.DateField(null=True, blank=True)
 
 class Task(models.Model):
-    description = models.TextField()
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tasks')
+    description = models.TextField()
     due_date = models.DateField(null=True, blank=True)
