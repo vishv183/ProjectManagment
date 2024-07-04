@@ -1,5 +1,3 @@
-.env
-.idea
 # Created by https://www.gitignore.io
 
 ### OSX ###
@@ -81,9 +79,9 @@ target/
 
 
 ### Django ###
-.log
-.pot
-.pyc
+*.log
+*.pot
+*.pyc
 __pycache__/
 local_settings.py
 
