@@ -10,6 +10,8 @@ class CustomUserAdmin(UserAdmin):
     list_display = ('id','email', 'mobile', 'is_active', 'is_staff', 'created_at', 'updated_at')
     search_fields = ('email', 'mobile')
     readonly_fields = ('created_at', 'updated_at')
+    search_fields = ('email', 'status', 'last_name')
+    ordering = ('email',)
 
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
