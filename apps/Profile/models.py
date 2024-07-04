@@ -1,6 +1,8 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
+from apps.Projects.models import Project
+
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -30,7 +32,8 @@ class CustomUser(AbstractUser):
     updated_at = models.DateTimeField(auto_now=True)
     avatar = models.ImageField(upload_to='media/avatar/', blank=True, null=True)
     mobile = models.CharField(max_length=15, unique=True, blank=True, null=True)
-
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='users', null=True, blank=True)
+    status = models.CharField(max_length=20, choices=(('active', 'Active'), ('inactive', 'Inactive')), default='Inactive')
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
