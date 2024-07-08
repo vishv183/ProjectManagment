@@ -5,12 +5,16 @@
 *.pot
 *.pyc
 __pycache__
+__pycache__/
+*/__pycache__/
+*/migrations/
 db.sqlite3
 media
-
+**/migrations/
+**/**/migrations
 # Backup files #
 *.bak
-
+tempfiles/
 # If you are using PyCharm #
 # User-specific stuff
 .idea/**/workspace.xml
@@ -113,7 +117,7 @@ venv.bak/
 
 # mypy
 .mypy_cache/
-
+.DS_Store
 # Sublime Text #
 *.tmlanguage.cache
 *.tmPreferences.cache
